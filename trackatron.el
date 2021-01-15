@@ -1,9 +1,10 @@
 ;;; trackatron.el --- Music tracker for Emacs.       -*- lexical-binding: t; -*-
+;;;
+;;; Copyright (C) 2021  Roger Pibernat
 
-;; Copyright (C) 2021  Roger Pibernat
-
-;; Author: Roger Pibernat <hello@rogerpibernat.com>
-;; Keywords:
+;;; Author: Roger Pibernat <hello@rogerpibernat.com>
+;;;
+;;; Commentary:
 ;;
 ;; --
 ;;
@@ -22,17 +23,25 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with Trackatron.  If not, see <https:;;www.gnu.org;licenses;>.
 ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Add this to your config file to use trackatro-mode with .trk files
+;; (add-to-list 'auto-mode-alist '("\\.trk\\'" . trackatron-mode))
+;;
 
 ;;; keymap ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-minor-mode trackatron-mode
   "Trackatron mode."
   :keymap (make-sparse-keymap)
+  (evil-define-key 'normal 'trackatron-mode "d" 'tktn-replace-with-original-grid-char)
+  (evil-define-key 'normal 'trackatron-mode "x" 'tktn-replace-with-original-grid-char)
+  (add-hook 'evil-insert-state-entry-hook 'overwrite-mode nil t)
   (overwrite-mode))
 
+(add-to-list 'auto-mode-alist '("\\.trk\\'" . trackatron-mode))
+
 ;; instead fo deleting chars replace them for original chars in the sequencer grid at that position
-(evil-define-key 'normal 'trackatron-mode "d" 'tktn-replace-with-original-grid-char)
-(evil-define-key 'normal 'trackatron-mode "x" 'tktn-replace-with-original-grid-char)
 
 ;; Defaults ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq tktn-default-sequencer-steps 32)
@@ -41,31 +50,39 @@
 (setq tktn-sequencer-current-step 0)
 
 ;; Grid
-(setq tktn-track-step-template "\t...\s..\s......")
+(setq tktn-empty-track-step-string "\t...\s..\s......")
 (setq tktn-track-header "\tNOT\sIN\sF1F2F3")
 (setq tktn-empty-track nil)
+
+(fmakunbound 'tktn-track-grid-string)
 
 ;;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun trackatron ()
   "Open Trackatron."
-  (tktn-insert-track 64)
+  (tktn-make-track-window)
   )
 
-(defun tktn-insert-track (steps)
-  (setq tktn-empty-track (concat tktn-track-header "\n" (tktn-track-grid steps tktn-track-step-template)))
+(defun tktn-make-track-window ()
+  (get-buffer-create "tracks.trk")
+  (switch-to-buffer "tracks.trk")
+  (insert (tktn-track-grid 64))
+  (goto-char 19)
+  (trackatron-mode))
+
+(defun tktn-track-grid (steps)
+  "Create an empty grid for a track of any number of STEPS."
+  (concat tktn-track-header "\n" (tktn-track-grid-string steps tktn-empty-track-step-string))
   )
 
-(defun tktn-track-grid (steps step-template)
-  "Return a grid with the given number of STEPS using the STEP-TEMPLATE."
+(defun tktn-track-grid-string (steps empty-step-string)
+  "Return a grid with the given number of STEPS using the EMPTY-STEP-STRING."
   (let ((step 1)
-        ;; "Counter."
         (grid-string ""))
     (while (<= step steps)
-      (setq grid-string (format (concat  grid-string "%02X" step-template "\n") step))
+      (setq grid-string (format (concat  grid-string "%02X" empty-step-string "\n") step))
       (setq step (+ step 1)))
     grid-string))
-
 
 (defun tktn-start-sequencer (tempo)
   (setq tktn-sequencer-timer (run-with-timer "1 sec" 1 (lambda () (trtn-sequencer-next-step)))))
@@ -80,37 +97,13 @@
 (defun tktn-sequencer-next-step ()
   (setq atime (run-at-time "1 sec" 1 (lambda () (message "alo")))))
 
-;; (defun foo ()
-;;   (draw-sequencer)
-;;   (dotimes (line 10)
-;;     (setq ol (make-overlay (- (* line line-width) line-width) line))
-;;     (overlay-put ol 'face "font-lock-comment-face")
-;;     (setq ol (make-overlay line (+ (replace* line line-width) line-width)))
-;;     (overlay-put ol 'face "font-lock-keyword-face")
-;;     (sit-for 0.4)))
-
 ;; helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun number-to-hex (number)
   (format "%02X" number))
 
-;; inserts a character from the grid at the given position
 (defun tktn-replace-with-original-grid-char ()
+  "Replace current character by empty grid space in step."
   (interactive) ; to be able to call it with evil-define-key or evil-set-key
-  (message "%d" (current-column))
-  (replace-string "0")
-  (buffer-substring (current-column) (+ 1 (current-column))))
-
-;;; ui.el ends here
-
-;; testing ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(trackatron)
-;; (create-tktn-split-window)
-;; (tktn-create-sequencer)
-;; (tktn-display)
-;; (tktn-start-sequencer 120)
-;; (tktn-stop-sequencer)
-;; (tktn-sequencer-next-step)
-;; (tktn-paste-original-grid-char)
-;; (tktn-create-empty-sequencer-string 32)
+  (message (substring (concat "00\t" tktn-empty-track-step-string) (+ (current-column)) (+ (current-column) 1))))
 
 ;;; trackatron.el ends here
