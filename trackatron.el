@@ -84,26 +84,29 @@
       (setq step (+ step 1)))
     grid-string))
 
-(defun tktn-start-sequencer (tempo)
-  (setq tktn-sequencer-timer (run-with-timer "1 sec" 1 (lambda () (trtn-sequencer-next-step)))))
+(defun tktn-char ()
+  "Delete current character and restore grid space at this point."
+  (interactive) ; to be able to call it with evil-define-key or evil-set-key
+  ;; (message (substring (concat "00\t" tktn-empty-track-step-string) (+ (current-column)) (+ (current-column) 1)))
+  (delete-char 1)
+  (insert (substring (concat "00\t" tktn-empty-track-step-string) (+ (current-column)) (+ (current-column) 1)))
+  )
 
-(defun tktn-stop-sequencer ()
-  (cancel-timer tktn-sequencer-timer))
+;; (defun tktn-start-sequencer (tempo)
+;;   (setq tktn-sequencer-timer (run-with-timer "1 sec" 1 (lambda () (trtn-sequencer-next-step)))))
 
-(defun tktn-sequencer-next-step ()
-  (setq tktn-sequencer-current-step (% (+ 1 tktn-sequencer-current-step) tktn-sequencer-steps))
-  (message "%02X" tktn-sequencer-current-step))
+;; (defun tktn-stop-sequencer ()
+;;   (cancel-timer tktn-sequencer-timer))
 
-(defun tktn-sequencer-next-step ()
-  (setq atime (run-at-time "1 sec" 1 (lambda () (message "alo")))))
+;; (defun tktn-sequencer-next-step ()
+;;   (setq tktn-sequencer-current-step (% (+ 1 tktn-sequencer-current-step) tktn-sequencer-steps))
+;;   (message "%02X" tktn-sequencer-current-step))
+
+;; (defun tktn-sequencer-next-step ()
+;;   (setq atime (run-at-time "1 sec" 1 (lambda () (message "alo")))))
 
 ;; helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun number-to-hex (number)
   (format "%02X" number))
-
-(defun tktn-replace-with-original-grid-char ()
-  "Replace current character by empty grid space in step."
-  (interactive) ; to be able to call it with evil-define-key or evil-set-key
-  (message (substring (concat "00\t" tktn-empty-track-step-string) (+ (current-column)) (+ (current-column) 1))))
 
 ;;; trackatron.el ends here
