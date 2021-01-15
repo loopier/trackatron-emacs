@@ -34,8 +34,8 @@
 (define-minor-mode trackatron-mode
   "Trackatron mode."
   :keymap (make-sparse-keymap)
-  (evil-define-key 'normal 'trackatron-mode "d" 'tktn-replace-with-original-grid-char)
-  (evil-define-key 'normal 'trackatron-mode "x" 'tktn-replace-with-original-grid-char)
+  (evil-define-key 'normal 'trackatron-mode "d" 'tktn-delete-char)
+  (evil-define-key 'normal 'trackatron-mode "x" 'tktn-delete-char)
   (add-hook 'evil-insert-state-entry-hook 'overwrite-mode nil t)
   (overwrite-mode))
 
@@ -84,7 +84,7 @@
       (setq step (+ step 1)))
     grid-string))
 
-(defun tktn-char ()
+(defun tktn-delete-char ()
   "Delete current character and restore grid space at this point."
   (interactive) ; to be able to call it with evil-define-key or evil-set-key
   ;; (message (substring (concat "00\t" tktn-empty-track-step-string) (+ (current-column)) (+ (current-column) 1)))
