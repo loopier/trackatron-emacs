@@ -33,9 +33,11 @@
 
 (define-minor-mode trackatron-mode
   "Trackatron mode."
+  :lighter "trackatron"
   :keymap (make-sparse-keymap)
   (evil-define-key 'normal 'trackatron-mode "d" 'tktn-delete-char)
   (evil-define-key 'normal 'trackatron-mode "x" 'tktn-delete-char)
+  ;; (evil-define-key 'insert 'trackatron-mode "DEL" 'tktn-delete-char)
   (add-hook 'evil-insert-state-entry-hook 'overwrite-mode nil t)
   (overwrite-mode))
 
@@ -50,7 +52,7 @@
 (setq tktn-sequencer-current-step 0)
 
 ;; Grid
-(setq tktn-empty-track-step-string "\t...\s..\s......")
+(setq tktn-empty-track-step-string "\t...\t..\t......")
 (setq tktn-track-header "\tNOT\sIN\sF1F2F3")
 (setq tktn-empty-track nil)
 
